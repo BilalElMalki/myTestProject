@@ -54,12 +54,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Embedded MongoDB for integration tests -->
+        <!-- Embedded MongoDB (dev + tests — no local MongoDB install needed) -->
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
-            <version>4.12.2</version>
-            <scope>test</scope>
+            <version>4.11.0</version>
         </dependency>
     </dependencies>
 

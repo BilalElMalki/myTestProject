@@ -8,82 +8,158 @@
 </head>
 <body>
 
-<div class="page-wrapper">
+<div class="calculator">
 
-    <!-- Calculator Card -->
-    <div class="calculator-card">
-        <h1 class="title">Calculator</h1>
-
-        <!-- Result / Error Banner -->
-        <div th:if="${response != null}">
-            <div th:if="${!response.hasError()}" class="result-banner success">
-                <span th:text="${response.expression}">expression</span>
-            </div>
-            <div th:if="${response.hasError()}" class="result-banner error">
-                <span th:text="${response.error}">error</span>
-            </div>
-        </div>
-
-        <!-- Calculation Form -->
-        <form th:action="@{/calculate}" th:object="${request}" method="post">
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="operand1">First Number</label>
-                    <input type="number" id="operand1" th:field="*{operand1}"
-                           step="any" placeholder="0" class="input-field"/>
-                    <span th:if="${#fields.hasErrors('operand1')}"
-                          th:errors="*{operand1}" class="field-error"></span>
-                </div>
-
-                <div class="form-group operator-group">
-                    <label for="operator">Operator</label>
-                    <select id="operator" th:field="*{operator}" class="select-field">
-                        <option value="">--</option>
-                        <option value="+">+</option>
-                        <option value="-">−</option>
-                        <option value="*">×</option>
-                        <option value="/">&divide;</option>
-                    </select>
-                    <span th:if="${#fields.hasErrors('operator')}"
-                          th:errors="*{operator}" class="field-error"></span>
-                </div>
-
-                <div class="form-group">
-                    <label for="operand2">Second Number</label>
-                    <input type="number" id="operand2" th:field="*{operand2}"
-                           step="any" placeholder="0" class="input-field"/>
-                    <span th:if="${#fields.hasErrors('operand2')}"
-                          th:errors="*{operand2}" class="field-error"></span>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-calculate">=</button>
-        </form>
+    <!-- Display -->
+    <div class="display">
+        <div class="display-expression" id="expression">&nbsp;</div>
+        <div class="display-value" id="display">0</div>
     </div>
 
-    <!-- History Table -->
-    <div class="history-card" th:if="${history != null and !#lists.isEmpty(history)}">
-        <h2 class="history-title">History</h2>
-        <table class="history-table">
-            <thead>
-                <tr>
-                    <th>Expression</th>
-                    <th>Result</th>
-                    <th>Date &amp; Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="calc : ${history}">
-                    <td th:text="${calc.operand1 + ' ' + calc.operator + ' ' + calc.operand2}">expr</td>
-                    <td th:text="${calc.result}">result</td>
-                    <td th:text="${#temporals.format(calc.timestamp, 'yyyy-MM-dd HH:mm:ss')}">date</td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Hidden form submitted on = -->
+    <form id="calcForm" th:action="@{/calculate}" method="post" style="display:none">
+        <input type="hidden" id="operand1" name="operand1"/>
+        <input type="hidden" id="operator" name="operator"/>
+        <input type="hidden" id="operand2" name="operand2"/>
+    </form>
+
+    <!-- Buttons Grid -->
+    <div class="buttons">
+
+        <!-- Row 1 -->
+        <button class="btn btn-fn span2" onclick="clearAll()">AC</button>
+        <button class="btn btn-fn" onclick="toggleSign()">+/−</button>
+        <button class="btn btn-fn" onclick="percent()">%</button>
+        <button class="btn btn-op" onclick="setOperator('/')">÷</button>
+
+        <!-- Row 2 -->
+        <button class="btn btn-num" onclick="appendDigit('7')">7</button>
+        <button class="btn btn-num" onclick="appendDigit('8')">8</button>
+        <button class="btn btn-num" onclick="appendDigit('9')">9</button>
+        <button class="btn btn-op" onclick="setOperator('*')">×</button>
+
+        <!-- Row 3 -->
+        <button class="btn btn-num" onclick="appendDigit('4')">4</button>
+        <button class="btn btn-num" onclick="appendDigit('5')">5</button>
+        <button class="btn btn-num" onclick="appendDigit('6')">6</button>
+        <button class="btn btn-op" onclick="setOperator('-')">−</button>
+
+        <!-- Row 4 -->
+        <button class="btn btn-num" onclick="appendDigit('1')">1</button>
+        <button class="btn btn-num" onclick="appendDigit('2')">2</button>
+        <button class="btn btn-num" onclick="appendDigit('3')">3</button>
+        <button class="btn btn-op" onclick="setOperator('+')">+</button>
+
+        <!-- Row 5 -->
+        <button class="btn btn-num span2" onclick="appendDigit('0')">0</button>
+        <button class="btn btn-num" onclick="appendDecimal()">.</button>
+        <button class="btn btn-equals" onclick="calculate()">=</button>
+
+    </div>
+
+    <!-- Error message (shown after form submit if error) -->
+    <div th:if="${response != null and response.hasError()}" class="error-toast">
+        <span th:text="${response.error}">error</span>
     </div>
 
 </div>
+
+<!-- History panel -->
+<div class="history-panel" th:if="${history != null and !#lists.isEmpty(history)}">
+    <h3 class="history-heading">History</h3>
+    <ul class="history-list">
+        <li th:each="calc : ${history}" class="history-item">
+            <span class="history-expr" th:text="${calc.operand1 + ' ' + calc.operator + ' ' + calc.operand2}"></span>
+            <span class="history-result" th:text="'= ' + ${calc.result}"></span>
+        </li>
+    </ul>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // Restore result from server response into display
+    var serverResult = /*[[${response != null and !response.hasError() ? response.result : null}]]*/ null;
+    var serverExpr   = /*[[${response != null and !response.hasError() ? response.expression : null}]]*/ null;
+
+    var currentValue = '0';
+    var storedValue  = null;
+    var pendingOp    = null;
+    var justEvaled   = false;
+
+    if (serverResult !== null) {
+        currentValue = String(serverResult);
+        document.getElementById('display').textContent = currentValue;
+        if (serverExpr) {
+            document.getElementById('expression').textContent = serverExpr;
+        }
+        justEvaled = true;
+    }
+
+    function updateDisplay() {
+        document.getElementById('display').textContent = currentValue;
+    }
+
+    function appendDigit(digit) {
+        if (justEvaled) { currentValue = '0'; justEvaled = false; }
+        if (currentValue === '0') {
+            currentValue = digit;
+        } else {
+            currentValue += digit;
+        }
+        updateDisplay();
+    }
+
+    function appendDecimal() {
+        if (justEvaled) { currentValue = '0'; justEvaled = false; }
+        if (!currentValue.includes('.')) {
+            currentValue += '.';
+        }
+        updateDisplay();
+    }
+
+    function setOperator(op) {
+        storedValue = currentValue;
+        pendingOp   = op;
+        currentValue = '0';
+        justEvaled   = false;
+        var opSymbol = {'+':'+', '-':'−', '*':'×', '/':'÷'}[op] || op;
+        document.getElementById('expression').textContent = storedValue + ' ' + opSymbol;
+    }
+
+    function calculate() {
+        if (storedValue === null || pendingOp === null) return;
+        document.getElementById('operand1').value = storedValue;
+        document.getElementById('operator').value  = pendingOp;
+        document.getElementById('operand2').value  = currentValue;
+        document.getElementById('calcForm').submit();
+    }
+
+    function clearAll() {
+        currentValue = '0';
+        storedValue  = null;
+        pendingOp    = null;
+        justEvaled   = false;
+        document.getElementById('expression').innerHTML = '&nbsp;';
+        updateDisplay();
+    }
+
+    function toggleSign() {
+        if (currentValue !== '0') {
+            currentValue = currentValue.startsWith('-')
+                ? currentValue.slice(1)
+                : '-' + currentValue;
+            updateDisplay();
+        }
+    }
+
+    function percent() {
+        currentValue = String(parseFloat(currentValue) / 100);
+        updateDisplay();
+    }
+
+    /*]]>*/
+</script>
 
 </body>
 </html>

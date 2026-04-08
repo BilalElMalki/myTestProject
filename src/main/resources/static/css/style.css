@@ -1,5 +1,5 @@
 /* ================================================
-   Calculator App — Light Color Theme
+   Calculator App — Dark Theme (Google Calculator style)
    ================================================ */
 
 * {
@@ -9,188 +9,170 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f4f8;
-    color: #2d3748;
-    min-height: 100vh;
+    background: #202124;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    align-items: flex-start;
-    padding: 40px 16px;
-}
-
-.page-wrapper {
-    width: 100%;
-    max-width: 680px;
-    display: flex;
-    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Google Sans', 'Roboto', sans-serif;
     gap: 24px;
+    padding: 24px 16px;
 }
 
-/* ---- Calculator Card ---- */
-.calculator-card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 36px 40px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+/* ---- Calculator wrapper ---- */
+.calculator {
+    background: #202124;
+    border-radius: 24px;
+    width: 340px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
 }
 
-.title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #2b6cb0;
-    margin-bottom: 24px;
-    text-align: center;
-    letter-spacing: -0.5px;
-}
-
-/* ---- Result Banner ---- */
-.result-banner {
-    border-radius: 10px;
-    padding: 14px 20px;
-    margin-bottom: 20px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-align: center;
-}
-
-.result-banner.success {
-    background-color: #ebf8ff;
-    color: #2b6cb0;
-    border: 1px solid #bee3f8;
-}
-
-.result-banner.error {
-    background-color: #fff5f5;
-    color: #c53030;
-    border: 1px solid #fed7d7;
-}
-
-/* ---- Form Layout ---- */
-.form-row {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    margin-bottom: 24px;
-}
-
-.form-group {
+/* ---- Display ---- */
+.display {
+    background: #202124;
+    padding: 24px 24px 12px;
+    text-align: right;
+    min-height: 110px;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    gap: 6px;
+    justify-content: flex-end;
+    gap: 4px;
 }
 
-.operator-group {
-    flex: 0 0 100px;
+.display-expression {
+    font-size: 0.95rem;
+    color: #9aa0a6;
+    min-height: 1.2em;
+    word-break: break-all;
 }
 
-label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #718096;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+.display-value {
+    font-size: 3rem;
+    font-weight: 300;
+    color: #e8eaed;
+    word-break: break-all;
+    line-height: 1.1;
 }
 
-.input-field,
-.select-field {
-    padding: 12px 14px;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 1rem;
-    color: #2d3748;
-    background: #f7fafc;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-    width: 100%;
+/* ---- Buttons Grid ---- */
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 12px 16px 20px;
+    background: #202124;
 }
 
-.input-field:focus,
-.select-field:focus {
-    border-color: #63b3ed;
-    box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.2);
-    background: #ffffff;
-}
-
-.select-field {
-    cursor: pointer;
-    text-align: center;
-    font-size: 1.2rem;
-}
-
-.field-error {
-    font-size: 0.78rem;
-    color: #c53030;
-}
-
-/* ---- Equals Button ---- */
-.btn-calculate {
-    display: block;
-    width: 100%;
-    padding: 14px;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #ffffff;
-    background: linear-gradient(135deg, #4299e1, #2b6cb0);
+/* ---- Base button ---- */
+.btn {
+    height: 64px;
     border: none;
-    border-radius: 12px;
+    border-radius: 50px;
+    font-size: 1.3rem;
+    font-weight: 400;
     cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-    letter-spacing: 0.05em;
+    transition: filter 0.12s, transform 0.08s;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.btn-calculate:hover {
-    opacity: 0.92;
-}
+.btn:hover  { filter: brightness(1.15); }
+.btn:active { transform: scale(0.94); filter: brightness(0.9); }
 
-.btn-calculate:active {
-    transform: scale(0.98);
-}
-
-/* ---- History Card ---- */
-.history-card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 28px 32px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-}
-
-.history-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #4a5568;
-    margin-bottom: 16px;
-}
-
-.history-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-}
-
-.history-table th {
+/* Span 2 columns (e.g. "0" button) */
+.btn.span2 {
+    grid-column: span 2;
+    border-radius: 50px;
     text-align: left;
-    padding: 10px 12px;
-    background-color: #edf2f7;
-    color: #718096;
+    padding-left: 28px;
+}
+
+/* Number buttons */
+.btn-num {
+    background: #3c4043;
+    color: #e8eaed;
+}
+
+/* Function buttons (AC, +/−, %) */
+.btn-fn {
+    background: #5f6368;
+    color: #202124;
+    font-weight: 500;
+}
+
+/* Operator buttons (÷, ×, −, +) */
+.btn-op {
+    background: #3c4043;
+    color: #8ab4f8;
+    font-weight: 500;
+}
+
+.btn-op:hover {
+    background: #4a90d9;
+    color: #202124;
+}
+
+/* Equals button */
+.btn-equals {
+    background: #8ab4f8;
+    color: #202124;
     font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.btn-equals:hover {
+    background: #aecbfa;
+}
+
+/* ---- Error toast ---- */
+.error-toast {
+    background: #3c1a1a;
+    color: #f28b82;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border-top: 1px solid #5c2626;
+}
+
+/* ---- History panel ---- */
+.history-panel {
+    width: 340px;
+    background: #2d2e30;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.history-heading {
     font-size: 0.78rem;
+    font-weight: 600;
+    color: #9aa0a6;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid #e2e8f0;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
 }
 
-.history-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #f0f4f8;
-    color: #4a5568;
+.history-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
-.history-table tr:last-child td {
-    border-bottom: none;
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #3c4043;
+    font-size: 0.92rem;
 }
 
-.history-table tr:hover td {
-    background-color: #f7fafc;
-}
+.history-item:last-child { border-bottom: none; }
+
+.history-expr   { color: #9aa0a6; }
+.history-result { color: #e8eaed; font-weight: 500; }
